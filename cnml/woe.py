@@ -12,8 +12,10 @@ from sklearn.utils.multiclass import type_of_target
 class WoETransformer(TransformerMixin, BaseEstimator):
     """A weight of evidence transformer.
 
-    It uses DecisionTreeClassiffier under the hood (hence the parameters) and handles missing values as well.
-    It applies the weight of evidence transformation to categorical variables or numerical variables. The weight of
+    It uses DecisionTreeClassiffier under the hood (hence the parameters)
+    and handles missing values as well.
+    It applies the weight of evidence transformation to categorical
+    variables or numerical variables. The weight of
     evidence is defined as:
 
     .. math::
@@ -26,15 +28,18 @@ class WoETransformer(TransformerMixin, BaseEstimator):
         The function to measure the quality of a split. Supported criteria are
         "gini" for the Gini impurity and "entropy" for the information gain.
     splitter : {"best", "random"}, default="best"
-        The strategy used to choose the split at each node. Supported strategies are "best" to choose the best split
+        The strategy used to choose the split at each node. Supported
+        strategies are "best" to choose the best split
         and "random" to choose the best random split.
     max_depth : int, default=None
-        The maximum depth of the tree. If None, then nodes are expanded until all leaves are pure or until all leaves
+        The maximum depth of the tree. If None, then nodes are expanded
+        until all leaves are pure or until all leaves
          contain less than min_samples_split samples.
     min_samples_split : int or float, default=2
         The minimum number of samples required to split an internal node:
         - If int, then consider `min_samples_split` as the minimum number.
-        - If float, then `min_samples_split` is a fraction and `ceil(min_samples_split * n_samples)` are the minimum
+        - If float, then `min_samples_split` is a fraction and `ceil(
+        min_samples_split * n_samples)` are the minimum
           number of samples for each split.
     min_samples_leaf : int or float, default=1
         The minimum number of samples required to be at a leaf node.
@@ -43,7 +48,8 @@ class WoETransformer(TransformerMixin, BaseEstimator):
         right branches.  This may have the effect of smoothing the model,
         especially in regression.
         - If int, then consider `min_samples_leaf` as the minimum number.
-        - If float, then `min_samples_leaf` is a fraction and `ceil(min_samples_leaf * n_samples)` are the minimum
+        - If float, then `min_samples_leaf` is a fraction and `ceil(
+        min_samples_leaf * n_samples)` are the minimum
           number of samples for each node.
     min_weight_fraction_leaf : float, default=0.0
         The minimum weighted fraction of the sum total of weights (of all
@@ -134,7 +140,9 @@ class WoETransformer(TransformerMixin, BaseEstimator):
         """Fits each of the columns in X independently
 
         Args:
-            X ({array-like, sparse matrix} of shape (n_samples, n_features)): The training input samples. Internally, it will be converted to
+            X ({array-like, sparse matrix} of shape (n_samples,
+            n_features)): The training input samples. Internally, it will be
+            converted to
                 ``dtype=np.float32`` and if a sparse matrix is provided to a
                 sparse ``csc_matrix``.
             y (array-like of shape (n_samples,)): The target values (class
