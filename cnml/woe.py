@@ -10,6 +10,7 @@ from sklearn.utils.multiclass import type_of_target
 
 
 class WoETransformer(TransformerMixin, BaseEstimator):
+    """Weight of evidence transformer"""
     def __init__(self,
                  criterion="gini",
                  splitter="best",
