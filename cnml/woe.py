@@ -21,7 +21,9 @@ class WoETransformer(TransformerMixin, BaseEstimator):
     .. math::
         \\text{WoE} = \\log\\frac{1-p}{p}
 
-        
+    This transformer deals with new categories in the test data set. See
+    :meth:`WoETransformer.transform`
+
     Parameters
     ----------
     criterion : {"gini", "entropy"}, default="gini"
@@ -206,10 +208,13 @@ class WoETransformer(TransformerMixin, BaseEstimator):
     def transform(self, X):
         """Applies the WoE transformation
 
+        For categorical variables if new categories appear the mean WoE is
+        applied.
+
         Args:
             X (array like): input data
 
-        Returns:
+        Returns: (array like of shape X.shape)
             transformed array
         """
         result = None
@@ -218,18 +223,24 @@ class WoETransformer(TransformerMixin, BaseEstimator):
             xi = np.array(X)[:, [i]]
             try:
                 xi = xi.astype(float)
-                nan = np.isnan(xi)[:, 0]
+            except ValueError:
+                # Variable is not numeric
+                (_, le), (_, tree) = tree.steps
+                # ... but new categories might have appeared so the
+                # transformer cannot be applied directly
+                le_dict = dict(zip(le.classes_, le.transform(le.classes_)))
+                vf = np.vectorize(lambda x: le_dict.get(x, np.nan))
+                xi = vf(xi)
+            # Score woe
+            nan = np.isnan(xi)[:, 0]
+            if np.sum(~nan) > 0:
+                # Can't predict probability with empty arrays
                 log_proba = tree.predict_proba(xi[~nan])
                 woe = log_proba[:, 0] - log_proba[:, 1]  # the woe
                 woe = np.array([woe]).T
                 xi[~nan] = woe
-                xi[nan] = nan_woe
-            except ValueError:
-                (_, le), (_, tree) = tree.steps
-                log_proba = tree.predict_proba(np.array([le.transform(xi)]).T)
-                woe = log_proba[:, 0] - log_proba[:, 1]  # the woe
-                woe = np.array([woe]).T
-                xi = woe
+
+            xi[nan] = nan_woe
 
             if i == 0:
                 result = xi
