@@ -4,7 +4,7 @@ import shutil
 
 from setuptools import setup, Command
 
-from cnml._version import version
+from cnml._version import __version__
 
 project = "cnml"
 
@@ -37,7 +37,7 @@ with open('requirements.txt') as f:
 setup(
     name=project,
     python_requires='>=3',
-    version=version,
+    version=__version__,
     description="Machine learning algorithm implementations",
     long_description=read('README.md'),
     url='',
