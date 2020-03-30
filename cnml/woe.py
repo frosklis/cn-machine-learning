@@ -168,12 +168,13 @@ class WoETransformer(TransformerMixin, BaseEstimator):
         def fit_var_i(i):
             # For each variable build a tree
             is_numeric = True
+            le = preprocessing.LabelEncoder()
             try:
                 x = np.array(X)[:, [i]].astype(float)
             except ValueError:
                 # Treat as string
                 is_numeric = False
-                le = preprocessing.LabelEncoder()
+
                 x = np.array(X)[:, [i]]
                 le.fit(x)
                 x = np.array([le.transform(x)]).T
