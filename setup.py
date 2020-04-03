@@ -39,7 +39,7 @@ setup(
     python_requires='>=3',
     version=__version__,
     description="Machine learning algorithm implementations",
-    long_description=read('README.md'),
+    long_description=read('README.rst'),
     url='',
     packages=[project, 'tests'],
     install_requires=requirements,
