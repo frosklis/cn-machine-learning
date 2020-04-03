@@ -40,7 +40,10 @@ setup(
     version=__version__,
     description="Machine learning algorithm implementations",
     long_description=read('README.rst'),
-    url='',
+    license=open('LICENSE'),
+    author='Claudio Noguera',
+    author_email='claudio.noguera@gmail.com'
+    url='https://github.com/frosklis/cn-machine-learning',
     packages=[project, 'tests'],
     install_requires=requirements,
     cmdclass={'clean': CompleteClean},
