@@ -151,10 +151,17 @@ class Spline(BaseEstimator):
         self._num_knots = num_knots
         self._degrees = degrees
         degree = 3
-        objective = lambda x: residuals(x, x=X, y=y, num_knots=num_knots,
+
+        x_max, x_min = np.max(X), np.min(X)
+        y_max, y_min = np.max(y), np.min(y)
+        tX = (X - x_min) / (x_max - x_min)
+        ty = (y - y_min) / (y_max - y_min)
+        self._maxmin = x_max, x_min, y_max, y_min
+
+        objective = lambda x: residuals(x, x=tX, y=ty, num_knots=num_knots,
                                         degrees=degrees)
-        knots_0 = np.percentile(X, np.linspace(0, 100, num_knots + 2))[1:-1]
-        fit = np.polyfit(X, y, degree)
+        knots_0 = np.percentile(tX, np.linspace(0, 100, num_knots + 2))[1:-1]
+        fit = np.polyfit(tX, ty, degree)
         zeros = np.zeros(num_knots) + fit[0]
 
         # fit = np.zeros(degree+1)
@@ -184,12 +191,16 @@ class Spline(BaseEstimator):
         self._bic = n * np.log(res.fun / (n - 1)) + k * np.log(n)
         self._aic = 2 * k + n * np.log(res.fun / (n - 1))
         self._aic += 2 * k * (1 + k) / (n - k - 1)
-        self._knots = res.x[-num_knots:]
+        self._knots = res.x[-num_knots:] * (x_max - x_min) + x_min
+
         return self
 
     def predict(self, X):
-        return eval_spline(X, self._coefs, num_knots=self._num_knots,
-                           degrees=self._degrees)
+        x_max, x_min, y_max, y_min = self._maxmin
+        tX = (X - x_min) / (x_max - x_min)
+        ty = eval_spline(tX, self._coefs, num_knots=self._num_knots,
+                         degrees=self._degrees)
+        return ty * (y_max - y_min) + y_min
 
     def _debug(self):
         return _helper(self._coefs, num_knots=self._num_knots,
