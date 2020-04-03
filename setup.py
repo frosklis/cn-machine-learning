@@ -42,7 +42,7 @@ setup(
     long_description=read('README.rst'),
     license=open('LICENSE'),
     author='Claudio Noguera',
-    author_email='claudio.noguera@gmail.com'
+    author_email='claudio.noguera@gmail.com',
     url='https://github.com/frosklis/cn-machine-learning',
     packages=[project, 'tests'],
     install_requires=requirements,
