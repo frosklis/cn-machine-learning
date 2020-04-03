@@ -1,3 +1,4 @@
 scikit-learn
-pytest
 pandas
+pytest
+pytest-cov
