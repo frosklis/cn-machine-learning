@@ -5,3 +5,4 @@ Change log
 -----
 
 - Implement WoE_categorizer
+- Implement splines
