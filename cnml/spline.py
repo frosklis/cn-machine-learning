@@ -1,15 +1,4 @@
 # Splines
-
-"""
-ax^3 + bx^2 + cx + d = 0
-3ax^2 + 2bx + c = 0
-6ax + 2b = 0
-
-b = -3ax
-c = +3ax^2
-d = -ax^3
-"""
-
 import numpy as np
 from scipy.optimize import minimize
 from sklearn.base import BaseEstimator
@@ -144,13 +133,64 @@ def residuals(coefs: np.array, num_knots: int = 3, x=None,
 class Spline(BaseEstimator):
     """Cubic splines regressor
 
+    This is a monovariate spline regressor. It fits a curve using chained
+    polynomials that are visually "pleasant". This is because the continuity
+    of the second derivative is mantained.
 
+    Because this is for fitting, not for interpolating there is no point in
+    talking about natural splines or constrained splines.
+
+    A nice feature as well is that the degree of the first and last
+    polynomials can be tweaked so that it is, for example, a horizontal line
+    (degree=0).
+
+    .. math::
+        ax^3 + bx^2 + cx + d = 0
+        3ax^2 + 2bx + c = 0
+        6ax + 2b = 0
+
+        b = -3ax
+        c = +3ax^2
+        d = -ax^3
+
+    Parameters
+    ----------
+    num_knots : int, default=3
+        number of knots that will be used
+    degrees : tuple(int, int), default=(3, 3)
+        degree of the first and last polynomials
+    degree : int, default=3
+        degree of the spline, currently this parameter is ignored, it always
+        uses the default value of 3
     """
 
-    def fit(self, X, y, num_knots=3, degrees=(3, 3)):
-        self._num_knots = num_knots
-        self._degrees = degrees
-        degree = 3
+    def __init__(self, num_knots: int = 3, degrees=(3, 3), degree=3):
+        self.num_knots = num_knots
+        self.degrees = degrees
+        self.degree = 3
+
+    def fit(self, X, y):
+        """Fits the spline with the given parameters.
+
+        Internally, in order to avoid numerical stability, the input values
+        are scaled to fit in the [-1, -1] range.
+
+        Parameters
+            X ({array-like, sparse matrix} of shape (n_samples,
+            n_features)): The training input samples. Internally, it will be
+            converted to
+                ``dtype=np.float32`` and if a sparse matrix is provided to a
+                sparse ``csc_matrix``.
+            y (array-like of shape (n_samples,)): The target values
+
+        Returns:
+            WoETransformer: **self** -- Fitted predictor.
+
+
+        """
+        degrees = self.degrees
+        num_knots = self.num_knots
+        degree = self.degree
 
         x_max, x_min = np.max(X), np.min(X)
         y_max, y_min = np.max(y), np.min(y)
@@ -198,10 +238,10 @@ class Spline(BaseEstimator):
     def predict(self, X):
         x_max, x_min, y_max, y_min = self._maxmin
         tX = (X - x_min) / (x_max - x_min)
-        ty = eval_spline(tX, self._coefs, num_knots=self._num_knots,
-                         degrees=self._degrees)
+        ty = eval_spline(tX, self._coefs, num_knots=self.num_knots,
+                         degrees=self.degrees)
         return ty * (y_max - y_min) + y_min
 
     def _debug(self):
-        return _helper(self._coefs, num_knots=self._num_knots,
-                       degrees=self._degrees)
+        return _helper(self._coefs, num_knots=self.num_knots,
+                       degrees=self.degrees)

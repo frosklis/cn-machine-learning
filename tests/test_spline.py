@@ -27,7 +27,7 @@ def test_sin_stable():
 def test_sin_0():
     X = np.linspace(0, 6.28, 1000)
     y = np.sin(X)
-    model = Spline().fit(X, y, degrees=(3, 1), num_knots=4)
+    model = Spline(degrees=(3, 1), num_knots=4).fit(X, y)
     y_hat = model.predict(X)
 
     error = np.abs(y - y_hat)
