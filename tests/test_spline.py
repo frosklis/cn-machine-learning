@@ -49,3 +49,11 @@ def test_no_knots():
     y_hat = model.predict(X)
     assert np.isnan(y_hat).sum() == 0, "there are null values in the output"
     assert len(y_hat) == len(y), "correct number of data points"
+
+def test_no_average():
+    X = np.linspace(0, 6.28, 1000)
+    y = np.sin(X)
+    model = Spline(num_knots=0, degrees=(0,0)).fit(X, y)
+    y_hat = model.predict(X)
+    assert np.isnan(y_hat).sum() == 0, "there are null values in the output"
+    assert len(y_hat) == len(y), "correct number of data points"

@@ -246,6 +246,3 @@ class Spline(BaseEstimator):
                          degrees=self.degrees)
         return ty * (y_max - y_min) + y_min
 
-    def _debug(self):
-        return _helper(self._coefs, num_knots=self.num_knots,
-                       degrees=self.degrees)
