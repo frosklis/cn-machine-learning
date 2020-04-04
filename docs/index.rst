@@ -1,4 +1,4 @@
-Welcome to cnml's documentation!
+CN Machine Learning
 ================================
 
 .. toctree::

@@ -146,11 +146,15 @@ class Spline(BaseEstimator):
 
     .. math::
         ax^3 + bx^2 + cx + d = 0
+
         3ax^2 + 2bx + c = 0
+        
         6ax + 2b = 0
 
         b = -3ax
+        
         c = +3ax^2
+        
         d = -ax^3
 
     Parameters
