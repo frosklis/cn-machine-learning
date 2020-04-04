@@ -197,7 +197,8 @@ class WoETransformer(TransformerMixin, BaseEstimator):
                 return tree, mean_woe
 
         if num_processes > 1:
-            from multiprocessing import Pool
+            # from multiprocessing import Pool
+            from pathos.multiprocessing import ProcessingPool as Pool
             pool = Pool(processes=num_processes)
             self._trees = pool.map(fit_var_i, range(self.n_features_))
         else:

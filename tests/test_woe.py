@@ -2,6 +2,7 @@
 import pickle
 
 import numpy as np
+import pytest
 from sklearn.model_selection import train_test_split
 
 from cnml.woe import WoETransformer
@@ -49,6 +50,21 @@ def test_woe_numeric_with_missing(titanic):
 
     woe_transformer = WoETransformer()
     woe_transformer.fit(X, y)
+
+    woe_transformer.transform(X)
+    assert True
+
+
+def test_woe_numeric_with_missing_parallel(titanic):
+    """Numeric data with missings but parallel"""
+    data = titanic
+    target_var = 'Survived'
+    numeric_vars = ['Age', 'Pclass', 'SibSp', 'Parch', 'Fare']
+    X = data[numeric_vars]
+    y = data[target_var]
+
+    woe_transformer = WoETransformer()
+    woe_transformer.fit(X, y, num_processes=2)
 
     woe_transformer.transform(X)
     assert True
@@ -113,3 +129,18 @@ def test_woe_new_values(titanic):
     woe_transformer.transform(X_train)
     woe_transformer.transform(X_test)
     assert True
+
+
+def test_non_binary(titanic):
+    """It should give an error when there are more than two values"""
+
+    data = titanic
+    target_var = 'Survived'
+    explanatory = ['Age', 'Sex']
+    X = data[explanatory]
+    y = data[target_var]
+    y[18] += 2
+
+    woe_transformer = WoETransformer()
+    with pytest.raises(ValueError, match=r".*binary target.*"):
+        woe_transformer.fit(X, y)
