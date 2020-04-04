@@ -1,4 +1,10 @@
 language: python
-# command to run tests
 script: pytest --cov=cnml
 after_success: bash <(curl -s https://codecov.io/bash)
+deploy:
+  on:
+    tags: true
+  provider: pypi
+  user: __token__
+  password:
+    secure: lUDdfS0w/P3YF7QospZmVHo0YWuFvuIwuteIQjzUuuJbOlA5K00iNHvuSp9cLx89pFL+dWO61ar2qYechdT1UdtKlvEZpbthgMACMkftY8F+LBUUs95DIph/1arUabr6ZOVyuc6kuc3YvaHMK78FjEB4J5YftRznp3LVLJPpWIjL1oOpPCbI4ETjxA+SvLqQGerKfTPUQWogjB/iDjLOczdWY9y6haHaF43svaFy7LWL2fxTC95PKhXANjGlME0mociZI1aIykZbOk58/WOLew4De7jCeN/sCathBKpq4cAV222RoAV73Rx9FWucS2U4XeRFGMUA8Bvv3T0gCoIzTN1C+wmN7g0SJBqVJkdSf/eN/fPo4sw8Fu0Ohs0iJr1f74h2z6EQeuKdMER5sxEUP1t1HWj8elQ1JwQT1h4AjXJSccGFJcYdvaP4SWr2+2x4uayPbg32R+5iQu0y7WMDtEH5KsNgJ9GBJ7YxLnLImx2UtkF6Iem/AYTYcP2PikW2RbOZM1A4DWakYvMAzegyWj8yjOp65tWfp2ntQ6LzjAJbauzBnVmGkoBAS2zQPv0kbiYoeE0pdQKaHqAl9tU0EjotN/n0DGKrEn0zay+GbMrL0uyDSwCkqHpxdBW5hCVJAzLQg3EJy8lVNyDp3EYq3Bl/bPqjRmWxJC6iLMXo4Z4=
