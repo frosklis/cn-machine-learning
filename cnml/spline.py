@@ -24,7 +24,7 @@ def _helper(coefs: np.array, num_knots: int = 3, degrees=(3, 3),
     knots = np.clip(np.sort(coefs[degree + 1 + num_knots:]), *clip)
     coefs[degree + 1 + num_knots:] = knots
 
-    def calculate_polynomials():
+    def calculate_polynomials(rest, coefs, first_poly):
         shifted = np.roll(rest, 1)
         shifted[0] = coefs[0]
         delta_a = rest - shifted
@@ -40,7 +40,7 @@ def _helper(coefs: np.array, num_knots: int = 3, degrees=(3, 3),
 
         return polynomials
 
-    polynomials = calculate_polynomials()
+    polynomials = calculate_polynomials(rest, coefs, first_poly)
 
     # Now tune the polynomials
     for idx, idx2, new_degree in zip([0, -1], [1, -2], degrees):
@@ -222,13 +222,13 @@ class Spline(BaseEstimator):
             method='Nelder-Mead',
             options={'maxfev': int(np.sqrt(n) * 200)}
         )
-        for method in ('BGFS', 'Powell'):
+        for method in ('BFGS', 'Powell'):
             res = minimize(
                 objective,
                 res.x,
                 method=method
             )
-            
+
         self._coefs = res.x
         self._optimization_result = res
         k = degree + 1 + num_knots * 2
