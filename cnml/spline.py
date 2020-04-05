@@ -4,6 +4,23 @@ from scipy.optimize import minimize
 from sklearn.base import BaseEstimator
 
 
+def _calculate_polynomials(knots, rest, coefs, first_poly):
+    shifted = np.roll(rest, 1)
+    shifted[0] = coefs[0]
+    delta_a = rest - shifted
+    deltas = np.array([
+        delta_a,
+        -3 * delta_a * knots,
+        +3 * delta_a * knots ** 2,
+        -1 * delta_a * knots ** 3,
+    ]).T
+    polynomials = np.cumsum(
+        np.concatenate([[first_poly], deltas], axis=0),
+        axis=0)
+
+    return polynomials
+
+
 def _helper(coefs: np.array, num_knots: int = 3, degrees=(3, 3),
             clip=(-np.inf, np.inf)):
     degree = 3
@@ -21,26 +38,10 @@ def _helper(coefs: np.array, num_knots: int = 3, degrees=(3, 3),
         return knots, polynomials
 
     rest = coefs[degree + 1:degree + 1 + num_knots]
-    knots = np.clip(np.sort(coefs[degree + 1 + num_knots:]), *clip)
+    knots = np.sort(np.clip(coefs[degree + 1 + num_knots:], *clip))
     coefs[degree + 1 + num_knots:] = knots
 
-    def calculate_polynomials(rest, coefs, first_poly):
-        shifted = np.roll(rest, 1)
-        shifted[0] = coefs[0]
-        delta_a = rest - shifted
-        deltas = np.array([
-            delta_a,
-            -3 * delta_a * knots,
-            +3 * delta_a * knots ** 2,
-            -1 * delta_a * knots ** 3,
-        ]).T
-        polynomials = np.cumsum(
-            np.concatenate([[first_poly], deltas], axis=0),
-            axis=0)
-
-        return polynomials
-
-    polynomials = calculate_polynomials(rest, coefs, first_poly)
+    polynomials = _calculate_polynomials(knots, rest, coefs, first_poly)
 
     # Now tune the polynomials
     for idx, idx2, new_degree in zip([0, -1], [1, -2], degrees):
@@ -112,25 +113,8 @@ def eval_spline(x, coefs: np.array, num_knots: int = 3, degrees=(3, 3)):
 
 def residuals(coefs: np.array, num_knots: int = 3, x=None,
               y=None, degrees=(3, 3)):
-    knots, polynomials = _helper(coefs, num_knots=num_knots,
-                                 degrees=degrees, clip=(x.min(), x.max()))
-    residual = 0
-    for i in range(num_knots + 1):
-        if i == 0:
-            indices = np.argwhere(x < knots[i])
-        elif i == num_knots:
-            indices = np.argwhere(x >= knots[i - 1])
-        else:
-            indices = np.argwhere(
-                (x >= knots[i - 1]) &
-                (x < knots[i]))
-        # Common case
-        pred_y = np.polyval(polynomials[i], x[indices])
-        real_y = y[indices]
-
-        residual += np.sum((pred_y - real_y) ** 2)
-
-    return residual
+    pred_y = eval_spline(x, coefs, num_knots=num_knots, degrees=degrees)
+    return np.sum((y - pred_y) ** 2)
 
 
 class Spline(BaseEstimator):
@@ -207,7 +191,7 @@ class Spline(BaseEstimator):
 
         objective = lambda x: residuals(x, x=tX, y=ty, num_knots=num_knots,
                                         degrees=degrees)
-        knots_0 = np.percentile(tX, np.linspace(0, 100, num_knots + 4))[2:-2]
+        knots_0 = np.percentile(tX, np.linspace(2.5, 97.5, num_knots))
         fit = np.polyfit(tX, ty, degree)
         zeros = np.zeros(num_knots) + fit[0]
 
@@ -219,10 +203,11 @@ class Spline(BaseEstimator):
         res = minimize(
             objective,
             np.concatenate([fit, zeros, knots_0]),
-            method='Nelder-Mead',
-            options={'maxfev': int(np.sqrt(n) * 200)}
+            method='BFGS',  # 'Nelder-Mead',
+            # options={'maxfev': int(np.sqrt(n) * 200)}
         )
-        for method in ('BFGS', 'Powell'):
+        methods = ('BFGS', 'Powell')
+        for method in methods:
             res = minimize(
                 objective,
                 res.x,
