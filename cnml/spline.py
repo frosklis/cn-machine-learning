@@ -49,7 +49,10 @@ def _helper(coefs: np.array, num_knots: int = 3, degrees=(3, 3),
         poly = polynomials[idx]  # copied by reference on purpose
         poly2 = polynomials[idx2]  # copied by reference on purpose
         knot = knots[idx]
-        knot2 = knots[idx2]
+        if num_knots == 1:
+            knot2 = knot
+        else:
+            knot2 = knots[idx2]
         f, df, df2 = [np.polyval(np.polyder(poly, i), knot)
                       for i in range(degree)]
         g, dg, dg2 = [np.polyval(np.polyder(poly2, i), knot2)
@@ -204,7 +207,7 @@ class Spline(BaseEstimator):
 
         objective = lambda x: residuals(x, x=tX, y=ty, num_knots=num_knots,
                                         degrees=degrees)
-        knots_0 = np.percentile(tX, np.linspace(0, 100, num_knots + 2))[1:-1]
+        knots_0 = np.percentile(tX, np.linspace(0, 100, num_knots + 4))[2:-2]
         fit = np.polyfit(tX, ty, degree)
         zeros = np.zeros(num_knots) + fit[0]
 
@@ -219,16 +222,13 @@ class Spline(BaseEstimator):
             method='Nelder-Mead',
             options={'maxfev': int(np.sqrt(n) * 200)}
         )
-        res = minimize(
-            objective,
-            res.x,
-            method='BFGS'
-        )
-        res = minimize(
-            objective,
-            res.x,
-            method='Powell'
-        )
+        for method in ('BGFS', 'Powell'):
+            res = minimize(
+                objective,
+                res.x,
+                method=method
+            )
+            
         self._coefs = res.x
         self._optimization_result = res
         k = degree + 1 + num_knots * 2
@@ -245,4 +245,3 @@ class Spline(BaseEstimator):
         ty = eval_spline(tX, self._coefs, num_knots=self.num_knots,
                          degrees=self.degrees)
         return ty * (y_max - y_min) + y_min
-
